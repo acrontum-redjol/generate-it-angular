@@ -1,0 +1,19 @@
+import { Injectable } from '@angular/core';
+import {
+    HttpRequest,
+    HttpHandler,
+    HttpEvent,
+    HttpInterceptor
+} from '@angular/common/http';
+
+import { Observable } from 'rxjs';
+
+@Injectable()
+// @ts-ignore
+export class UrlInterceptor implements HttpInterceptor {
+    intercept<T>(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<T>> {
+        return next.handle(request.clone({
+            url: 'http://localhost:8080' + request.url
+        }));
+    }
+}

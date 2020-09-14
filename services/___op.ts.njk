@@ -1,0 +1,46 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpRequest, HttpParams, HttpEvent } from '@angular/common/http';
+import { Observable } from 'rxjs';
+{% set interfaces = importInterfaces(operations) %}
+import {
+{% for interface in interfaces -%}
+{{ interface }},
+{%- endfor %}
+} from '../interfaces';
+
+@Injectable({
+    providedIn: 'root'
+})
+// @ts-ignore
+export class {{ucFirst(operation_name)}}Service {
+  constructor(private http: HttpClient) { }
+  public basePath = '{{ basePath if basePath else "/" }}'
+{% for op in operations -%}
+  {% for method, path in op.path -%}
+    {% if isValidMethod(method)%}
+  /**
+   *  Operation ID: {{ path.operationId }}
+   *  Summary: {{ path.summary }}
+   *  Description: {{ path.description }}
+   */
+  {% set domainParams = pathParamsToDomainParams(method, path, true) %}
+  public {{ path.operationId }} <T>({% if domainParams %}{{ domainParams }}{% endif %}init?: T): Observable<HttpEvent<{{ path['x-response-definitions']['200'] if path['x-response-definitions']['200'] else 'void' }}>>{
+    return this.http.request(new HttpRequest (
+      '{{ method | upper}}',
+      this.basePath + '{{ urlPathJoin(op.path_name)}}',
+      {% if method | upper === 'POST' or method | upper === 'PUT' or method | upper === 'PATCH' %} body, {% endif %}
+      {
+        {% for requestType, value in path['x-request-definitions'] -%}
+          {% if requestType === 'path' %}params: new HttpParams({
+              fromObject: Object.entries(pathParams).reduce((acc, [key, value]) => ({...acc, [key]: String(value)}), {})
+          }),
+          {% endif %}
+        {%- endfor %}
+        ...init
+      },
+    ))
+  }
+    {% endif %}
+  {%- endfor %}
+{%- endfor %}
+}

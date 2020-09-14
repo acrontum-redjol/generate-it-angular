@@ -1,0 +1,14 @@
+/* "Barrel" of Http Interceptors */
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+
+import { JwtInterceptor } from './JwtInterceptor';
+import { PathParamsInterceptor } from './PathParamsInterceptor';
+import { UrlInterceptor } from './UrlInterceptor';
+
+
+/** Http interceptor providers in outside-in order */
+export default [
+    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: PathParamsInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: UrlInterceptor, multi: true },
+];

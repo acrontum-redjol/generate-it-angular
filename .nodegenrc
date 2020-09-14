@@ -1,0 +1,5 @@
+{
+  "nodegenDir": "api",
+  "nodegenMockDir": "api/__mocks__",
+  "nodegenType": "client"
+}

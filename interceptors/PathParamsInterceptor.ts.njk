@@ -1,0 +1,40 @@
+import { Injectable } from '@angular/core';
+import {
+    HttpRequest,
+    HttpHandler,
+    HttpEvent,
+    HttpInterceptor, HttpParams
+} from '@angular/common/http';
+
+import { Observable } from 'rxjs';
+
+@Injectable()
+// @ts-ignore
+export class PathParamsInterceptor implements HttpInterceptor {
+    intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+        const [url, params] = this.injectParamsToPath(request.params, request.url)
+        request = request.clone({
+            url,
+            params
+        })
+        return next.handle(request);
+    }
+
+    injectParamsToPath (params: HttpParams, path: string = ''): [string, HttpParams] {
+        let notFound = {}
+        Object.keys(params).forEach((param) => {
+            if(path.includes(param)) {
+                path = path.replace(':' + param, params.get(param) as string);
+            } else {
+                notFound = {
+                    ...notFound,
+                    [param]: params.get(param)
+                }
+            }
+        });
+        const cleanParams = new HttpParams({
+            fromObject: notFound
+        })
+        return [path, cleanParams];
+    }
+}
